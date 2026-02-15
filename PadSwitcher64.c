@@ -220,6 +220,8 @@
 #define CP_LEFT 4
 #define CP_RIGHT 8
 #define CP_FIRE 16
+#define CP_FIREB 32 /* POTX */
+#define CP_FIREC 64 /* POTY */
 
 #define CP_DIRS 15	//All directions pressed
 #define CP_ALL 31	//with fire
@@ -796,18 +798,19 @@ uint8_t MASTERHELD;
 							}
 						}
 						SetLED(1);
-					}else{	
+					}else{
 						if (((PAD&PAD_UP)==0)&&(DISABLE_UP==0)) C64_PORT[B]=C64_PORT[B]|CP_UP;
-						if ((PAD&PAD_B)==0) C64_PORT[B]=C64_PORT[B]|CP_UP;
 						if ((PAD&PAD_DOWN)==0) C64_PORT[B]=C64_PORT[B]|CP_DOWN;
 						if ((PAD&PAD_LEFT)==0) C64_PORT[B]=C64_PORT[B]|CP_LEFT;
-						if ((PAD&PAD_RIGHT)==0) C64_PORT[B]=C64_PORT[B]|CP_RIGHT;					
-						if ((PAD&PAD_Y)==0) C64_PORT[B]=C64_PORT[B]|CP_FIRE;
-						if ((PAD&PAD_A)==0) C64_PORT[B]=C64_PORT[B]|SPECIAL|CP_FIRE;
-						if ((PAD&PAD_X)==0) C64_PORT[B]=C64_PORT[B]|((RAPIDSTATE&4)<<2);
-						if (((PAD&PAD_R)==0)&&(SWAP==0)) C64_PORT[0]=C64_PORT[0]|MATRIX;
+						if ((PAD&PAD_RIGHT)==0) C64_PORT[B]=C64_PORT[B]|CP_RIGHT;
+						if ((PAD&PAD_Y)==0) C64_PORT[B]=C64_PORT[B]|CP_UP;
+						if ((PAD&PAD_B)==0) C64_PORT[B]=C64_PORT[B]|CP_FIREB;
+						if ((PAD&PAD_A)==0) C64_PORT[B]=C64_PORT[B]|CP_FIRE;
+						if ((PAD&PAD_X)==0) C64_PORT[B]=C64_PORT[B]|CP_FIREC;
+						if (((PAD&PAD_L)==0)&&(SWAP==0)) C64_PORT[0]=C64_PORT[0]|MATRIX;
+						if ((PAD&PAD_R)==0) C64_PORT[B]=C64_PORT[B]|((RAPIDSTATE&4)<<2);
 					}
-					
+
 				}else{
 					if((PAD&PAD_SELECT)!=0){
 						if (((PAD&PAD_UP)==0)&&(DISABLE_UP==0)) C64_PORT[B]=C64_PORT[B]|CP_UP;
@@ -989,12 +992,17 @@ uint8_t ReadCP2(void){
 
 void SetCP2(uint8_t data){
 	DDRD = (DDRD & 31)|((data & 7) << 5);
-	DDRB = ((data & 8) >> 3)|((data & 16) << 3);
+    // read DDRB and mask  bits we aren't touching. (5&6 used by CP1, 3&4 unused)
+    //                  move bit3 to bit0. move bit4 to bit7,move bits5&6to1&2,
+	DDRB = (DDRB & 120)|((data & 8) >> 3)|((data & 16) << 3)|((data & 96) >> 4);
 }
 
 void SetCP1(uint8_t data){
 	DDRD = (DDRD & 224)|(data & 31);
 	//DDRB = (DDRB & 191)|((data & 16) << 2);
+    // mask off bits 5&6 that we are using.
+    // bits 5&6 in data become 5&6 on portb directly
+	DDRB = (DDRB & 159)|(data & 96);
 }
 /*
 void SetPOTs(uint8_t data){

@@ -42,7 +42,8 @@
 
 # MCU name
 #MCU = atmega88pu
-MCU = atmega88
+#MCU = atmega88
+MCU = atmega88pa
 
 # Processor frequency.
 #     This will define a symbol, F_CPU, in all source code files equal to the 
