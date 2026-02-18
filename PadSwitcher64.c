@@ -973,11 +973,11 @@ void SetupPorts(void){
 	
 	DDRD = 0;
 	DDRC = 32;
-	DDRB = 0;
+	DDRB = 0b01100110;
 	
 	PORTD = 0;
 	PORTC = 223;
-	PORTB = 0b01111110;
+	PORTB = 0b00011000;
 	
 	//SNES_DAT1_DDR = SNES_DAT1_DDR | ~(SNES_DATA_1);
 	//SNES_DAT2_DDR = SNES_DAT2_DDR | ~(SNES_DATA_2);
@@ -992,17 +992,16 @@ uint8_t ReadCP2(void){
 
 void SetCP2(uint8_t data){
 	DDRD = (DDRD & 31)|((data & 7) << 5);
-    // read DDRB and mask  bits we aren't touching. (5&6 used by CP1, 3&4 unused)
-    //                  move bit3 to bit0. move bit4 to bit7,move bits5&6to1&2,
-	DDRB = (DDRB & 120)|((data & 8) >> 3)|((data & 16) << 3)|((data & 96) >> 4);
+	// bits 1/2/5/6 are always outputs
+	DDRB = 0b01100110|((data & 8) >> 3)|((data & 16) << 3);
+    PORTB = (PORTB & 0b11111001) | ((data & 96) >> 4);
 }
 
 void SetCP1(uint8_t data){
 	DDRD = (DDRD & 224)|(data & 31);
 	//DDRB = (DDRB & 191)|((data & 16) << 2);
-    // mask off bits 5&6 that we are using.
-    // bits 5&6 in data become 5&6 on portb directly
-	DDRB = (DDRB & 159)|(data & 96);
+	// set bits 5&6 high (button pressed) or low (button released)
+    PORTB = (PORTB & 0b10011111) | (data & 96);
 }
 /*
 void SetPOTs(uint8_t data){
