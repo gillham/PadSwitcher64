@@ -796,6 +796,10 @@ uint8_t MASTERHELD;
 								if(SPECIAL>2) SPECIAL=1;
 								MASTERHELD=1;
 							}
+                            // how to check for just select on its own?
+                            if (MASTERHELD!=1){
+						        C64_PORT[B]=C64_PORT[B]|CP_DOWN|CP_UP;  // up&down simultaneous is select in 5 button setup
+                            }
 						}
 						SetLED(1);
 					}else{
